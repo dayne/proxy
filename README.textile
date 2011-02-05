@@ -1,0 +1,38 @@
+h1. Silly Proxy
+
+By Dayne Broderson
+
+This proxy is a simple webrick proxy server.  Works for most basic web activities. I use it via an ssh tunnel from my laptop on a public wireless network to my workstation on a trusted network.
+
+h2. Disclaimer
+
+Holy cow!  This is certainly not something you should run on a public port.  I use this via ssh tunnels and don't allow others access to the port it runs on.  The logging file I have for my own interests but is clearly a terrible idea to make available to others.
+
+h2. Usage
+
+* Start it up:
+@@./proxy start@@
+* Is it running?
+@@./proxy status@@
+@@curl http://localhost:5000@@
+* Stop it
+@@./proxy stop@@
+
+h2. Ssh tunnel
+
+I hate remembering the syntax on my command line so I just have the following in my .ssh/config file on my laptop 
+<pre>Host trusted_workstation
+  LocalForward 5000 localhost:5000</pre>
+Letting me do a simple @@ssh trusted_workstation@@ and have the tunnel setup.
+
+Then point your web browser to use localhost:5000 as it's proxy.
+
+The command line alternative:
+@@ssh -L 5000:localhost:5000 trusted_workstation@@ 
+
+h2. Proxy Managers
+
+Having to manually switch between proxy and direct in my browsers is lame so I use the following plugins:
+
+* Chrome: "Switchy!":http://switchy.samabox.com/
+* Firefox: (i forgot.. remind me)

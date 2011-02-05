@@ -1,0 +1,79 @@
+#!/usr/bin/env ruby
+
+require 'webrick'
+require 'webrick/httpproxy'
+
+require 'optparse'
+ARGV.options do |opt|
+  opt.banner = "Usage:ruby proxy.rb [start|stop]"
+  opt.on("Options:")
+  opt.on("-P","--pid PIDFILE", String, "path/filename of PID file") { |n|  @pid=n }
+  opt.on("-p","--port port", String, "port number to use (default 5000)") { |n|  @port=n.to_i }
+  opt.on("-l","--log LOGFILE", String, "log file") { |n|  @log=n }
+  opt.on("--help", "-H", "This text") { puts opt; exit 0 }
+  opt.parse!
+end
+
+
+action = ARGV.shift
+action = action.downcase if action
+
+port = (@port)?(@port):5000
+pidfile = (@pid)?(@pid):File.join( File.dirname(__FILE__), 'proxy.pid')
+log = (@log)?(@log):File.join( File.dirname(__FILE__), 'proxy.log')
+
+pid = File.read(pidfile).to_i if File.exists?(pidfile)
+if action == 'stop'
+  puts "removing old pidfile"
+  File.unlink pidfile
+  puts "stopping server: #{pid}"
+  pid && Process.kill("TERM", pid)
+  exit
+end
+
+if File.exists?( pidfile )
+  puts "pidfile already exists: #{pidfile}" 
+  if File.directory? "/proc/#{pid}"
+    puts "proxy appears to be running"
+    exit
+  else
+    puts "proxy appears to be dead removing stale pidfile"
+    File.unlink pidfile
+  end
+  exit
+end    
+
+
+if action == 'start'
+  puts "starting up the proxy on port #{port} with pidfile: #{pidfile}"
+  fork do 
+    Process.setsid
+    exit if fork
+
+    File.open(pidfile,'w') { |f| f << $$ }
+
+    File.umask 0000
+
+    STDIN.reopen "/dev/null"
+    STDOUT.reopen log
+    STDERR.reopen STDOUT
+    
+    server = WEBrick::HTTPProxyServer.new(
+  	  :Port => port,
+  	  :Logger =>WEBrick::Log::new(log, WEBrick::Log::DEBUG)
+    )
+  
+    Signal.trap('INT') do
+  	  server.shutdown
+    end
+
+    Signal.trap('TERM') do 
+      server.shutdown
+    end
+    
+    server.start
+  end
+  exit
+end
+
+puts "what? start/stop? --help perhaps?"
