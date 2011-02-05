@@ -11,24 +11,24 @@ Holy cow!  This is certainly not something you should run on a public port.  I u
 h2. Usage
 
 * Start it up:
-@@./proxy start@@
+@./proxy start@
 * Is it running?
-@@./proxy status@@
-@@curl http://localhost:5000@@
+@./proxy status@
+@curl http://localhost:5000@
 * Stop it
-@@./proxy stop@@
+@./proxy stop@
 
 h2. Ssh tunnel
 
 I hate remembering the syntax on my command line so I just have the following in my .ssh/config file on my laptop 
 <pre>Host trusted_workstation
   LocalForward 5000 localhost:5000</pre>
-Letting me do a simple @@ssh trusted_workstation@@ and have the tunnel setup.
+Letting me do a simple @ssh trusted_workstation@ and have the tunnel setup.
 
 Then point your web browser to use localhost:5000 as it's proxy.
 
 The command line alternative:
-@@ssh -L 5000:localhost:5000 trusted_workstation@@ 
+@ssh -L 5000:localhost:5000 trusted_workstation@ 
 
 h2. Proxy Managers
 
